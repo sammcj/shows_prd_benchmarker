@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Coverage Report — Showbiz Benchmark</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181b24;
+    --surface-raised: #1e2230;
+    --border: #2a2e3b;
+    --text: #e4e6ed;
+    --text-muted: #8b90a0;
+    --text-dim: #5c6070;
+    --accent: #6c8cff;
+    --accent-glow: rgba(108, 140, 255, 0.15);
+    --green: #34d399;
+    --green-dim: rgba(52, 211, 153, 0.12);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251, 191, 36, 0.12);
+    --red: #f87171;
+    --red-dim: rgba(248, 113, 113, 0.12);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 40px 80px;
+  }
+
+  /* ── Header ── */
+  .header {
+    margin-bottom: 48px;
+  }
+  .header-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .header-meta {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  /* ── Score Hero ── */
+  .score-hero {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    margin-bottom: 32px;
+  }
+  .score-ring-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-ring {
+    position: relative;
+    width: 180px;
+    height: 180px;
+  }
+  .score-ring svg {
+    transform: rotate(-90deg);
+  }
+  .score-ring-bg {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 12;
+  }
+  .score-ring-fill {
+    fill: none;
+    stroke-width: 12;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1.2s ease;
+  }
+  .score-ring-value {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-number {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+  .score-unit {
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-left: 2px;
+  }
+  .score-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+  .score-ring-caption {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 12px;
+    text-align: center;
+  }
+
+  .score-context h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .score-context p {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 16px;
+    line-height: 1.65;
+  }
+
+  /* ── Tier Bars ── */
+  .tier-bars {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .tier-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .tier-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .tier-name {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .tier-pct {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+  .tier-bar-track {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .tier-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s ease;
+  }
+  .tier-counts {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+  }
+  .tier-count {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-muted);
+  }
+  .tier-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Section headers ── */
+  .section {
+    margin-bottom: 40px;
+  }
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .section-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+
+  /* ── Strengths Grid ── */
+  .strengths-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .strength-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    border-radius: var(--radius-sm);
+    padding: 20px 22px;
+  }
+  .strength-card h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--green);
+  }
+  .strength-card p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ── Risk table ── */
+  .risk-table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .risk-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .risk-table thead {
+    background: var(--surface-raised);
+  }
+  .risk-table th {
+    text-align: left;
+    padding: 14px 18px;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .risk-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .risk-table tr:last-child td {
+    border-bottom: none;
+  }
+  .risk-table .req-id {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .pill-critical { background: var(--red-dim); color: var(--red); }
+  .pill-important { background: var(--amber-dim); color: var(--amber); }
+  .pill-detail { background: rgba(139,144,160,0.12); color: var(--text-muted); }
+  .pill-missing { background: var(--red-dim); color: var(--red); }
+  .pill-partial { background: var(--amber-dim); color: var(--amber); }
+
+  .gap-desc {
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ── Top Gaps ── */
+  .gap-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+  .gap-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .gap-rank {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--red-dim);
+    color: var(--red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .gap-card-header h4 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .gap-card-header .pill {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .gap-card-ids {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .gap-card p {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .gap-card .impact {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: var(--red-dim);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--red);
+    font-weight: 500;
+    line-height: 1.55;
+  }
+
+  /* ── Functional Area Heatmap ── */
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .heatmap-row {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    gap: 14px;
+  }
+  .heatmap-area {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .heatmap-blocks {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+  .heatmap-block {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }
+  .hb-full { background: var(--green); }
+  .hb-partial { background: var(--amber); }
+  .hb-missing { background: var(--red); }
+  .heatmap-score {
+    font-size: 13px;
+    font-weight: 700;
+    width: 44px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ── Remediation ── */
+  .remediation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  .remediation-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .remediation-card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .remediation-card .tag {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .remediation-card ul {
+    padding-left: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .remediation-card li {
+    margin-bottom: 4px;
+  }
+
+  /* ── Bottom line ── */
+  .bottom-line {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-top: 40px;
+  }
+  .bottom-line h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .bottom-line p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* ── Divider ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 48px 0;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-label">Plan Evaluation Report</div>
+    <h1>Showbiz Benchmark — Coverage Analysis</h1>
+    <div class="header-meta">123 requirements extracted across 14 functional areas &middot; 19 critical &middot; 69 important &middot; 35 detail</div>
+  </div>
+
+  <!-- Score Hero -->
+  <div class="score-hero">
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle class="score-ring-bg" cx="90" cy="90" r="78" />
+          <circle class="score-ring-fill" cx="90" cy="90" r="78"
+            stroke="var(--amber)"
+            stroke-dasharray="490"
+            stroke-dashoffset="203" />
+        </svg>
+        <div class="score-ring-value">
+          <div><span class="score-number">58.5</span><span class="score-unit">%</span></div>
+          <div class="score-label">Overall Coverage</div>
+        </div>
+      </div>
+      <div class="score-ring-caption">72.0 weighted points of 123 possible</div>
+    </div>
+    <div class="score-context">
+      <h2>The plan knows what to build. It hasn't specified how.</h2>
+      <p>The plan covers the core architecture and happy-path features at a structural level. Critical requirements are nearly fully addressed at 94.7%. But important-tier coverage drops to 58.7%, and detail-tier sits at 38.6% — revealing that interaction contracts, UX rules, and fit-and-finish specs are systematically under-specified.</p>
+      <p>A team executing this plan would produce an application that has the right pages and routes, but surprises stakeholders when they try to filter by tag, chain an Alchemy session, navigate to a Person page, or confirm that tile badges reflect their library state.</p>
+      <p style="color: var(--text); font-weight: 500; margin-bottom: 0;">The foundation is strong. The behavioural layer needs work before this plan is execution-ready.</p>
+    </div>
+  </div>
+
+  <!-- Tier Bars -->
+  <div class="tier-bars">
+    <div class="tier-card">
+      <div class="tier-header">
+        <span class="tier-name" style="color: var(--green);">Critical</span>
+        <span class="tier-pct" style="color: var(--green);">94.7%</span>
+      </div>
+      <div class="tier-bar-track">
+        <div class="tier-bar-fill" style="width: 94.7%; background: var(--green);"></div>
+      </div>
+      <div class="tier-counts">
+        <div class="tier-count"><span class="tier-dot" style="background: var(--green);"></span> 17 full</div>
+        <div class="tier-count"><span class="tier-dot" style="background: var(--amber);"></span> 2 partial</div>
+        <div class="tier-count"><span class="tier-dot" style="background: var(--red);"></span> 0 missing</div>
+      </div>
+    </div>
+    <div class="tier-card">
+      <div class="tier-header">
+        <span class="tier-name" style="color: var(--amber);">Important</span>
+        <span class="tier-pct" style="color: var(--amber);">58.7%</span>
+      </div>
+      <div class="tier-bar-track">
+        <div class="tier-bar-fill" style="width: 58.7%; background: var(--amber);"></div>
+      </div>
+      <div class="tier-counts">
+        <div class="tier-count"><span class="tier-dot" style="background: var(--green);"></span> 26 full</div>
+        <div class="tier-count"><span class="tier-dot" style="background: var(--amber);"></span> 29 partial</div>
+        <div class="tier-count"><span class="tier-dot" style="background: var(--red);"></span> 14 missing</div>
+      </div>
+    </div>
+    <div class="tier-card">
+      <div class="tier-header">
+        <span class="tier-name" style="color: var(--red);">Detail</span>
+        <span class="tier-pct" style="color: var(--red);">38.6%</span>
+      </div>
+      <div class="tier-bar-track">
+        <div class="tier-bar-fill" style="width: 38.6%; background: var(--red);"></div>
+      </div>
+      <div class="tier-counts">
+        <div class="tier-count"><span class="tier-dot" style="background: var(--green);"></span> 10 full</div>
+        <div class="tier-count"><span class="tier-dot" style="background: var(--amber);"></span> 7 partial</div>
+        <div class="tier-count"><span class="tier-dot" style="background: var(--red);"></span> 18 missing</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Functional Area Heatmap -->
+  <div class="section">
+    <div class="section-title">Coverage by Functional Area</div>
+    <div class="section-subtitle">Each block represents one requirement. Green = full, amber = partial, red = missing.</div>
+    <div class="heatmap-grid">
+
+      <!-- Collection & Status Management: 12 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">Collection & Status</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-full" title="PRD-001 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-002 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-003 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-004 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-005 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-006 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-007 partial"></div>
+          <div class="heatmap-block hb-missing" title="PRD-008 missing"></div>
+          <div class="heatmap-block hb-partial" title="PRD-009 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-010 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-011 partial"></div>
+          <div class="heatmap-block hb-missing" title="PRD-012 missing"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--amber);">62%</span>
+      </div>
+
+      <!-- Tags & Filtering: 4 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">Tags & Filtering</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-partial" title="PRD-013 partial"></div>
+          <div class="heatmap-block hb-missing" title="PRD-014 missing"></div>
+          <div class="heatmap-block hb-missing" title="PRD-015 missing"></div>
+          <div class="heatmap-block hb-missing" title="PRD-016 missing"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--red);">12%</span>
+      </div>
+
+      <!-- Collection Home: 4 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">Collection Home</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-full" title="PRD-017 full"></div>
+          <div class="heatmap-block hb-missing" title="PRD-018 missing"></div>
+          <div class="heatmap-block hb-partial" title="PRD-019 partial"></div>
+          <div class="heatmap-block hb-missing" title="PRD-020 missing"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--red);">38%</span>
+      </div>
+
+      <!-- Search & Catalog: 5 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">Search & Catalog</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-full" title="PRD-021 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-022 partial"></div>
+          <div class="heatmap-block hb-partial" title="PRD-023 partial"></div>
+          <div class="heatmap-block hb-partial" title="PRD-024 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-025 full"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--amber);">70%</span>
+      </div>
+
+      <!-- AI Chat (Ask): 6 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">AI Chat (Ask)</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-full" title="PRD-026 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-027 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-028 partial"></div>
+          <div class="heatmap-block hb-missing" title="PRD-029 missing"></div>
+          <div class="heatmap-block hb-partial" title="PRD-030 partial"></div>
+          <div class="heatmap-block hb-partial" title="PRD-031 partial"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--amber);">58%</span>
+      </div>
+
+      <!-- AI Scoop: 7 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">AI Scoop</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-partial" title="PRD-032 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-033 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-034 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-035 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-036 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-037 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-038 full"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--amber);">79%</span>
+      </div>
+
+      <!-- Alchemy: 8 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">Alchemy</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-full" title="PRD-039 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-040 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-041 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-042 full"></div>
+          <div class="heatmap-block hb-missing" title="PRD-043 missing"></div>
+          <div class="heatmap-block hb-missing" title="PRD-044 missing"></div>
+          <div class="heatmap-block hb-partial" title="PRD-045 partial"></div>
+          <div class="heatmap-block hb-missing" title="PRD-046 missing"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--amber);">56%</span>
+      </div>
+
+      <!-- Explore Similar: 9 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">Explore Similar</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-partial" title="PRD-047 partial"></div>
+          <div class="heatmap-block hb-partial" title="PRD-048 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-049 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-050 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-051 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-052 full"></div>
+          <div class="heatmap-block hb-missing" title="PRD-053 missing"></div>
+          <div class="heatmap-block hb-missing" title="PRD-054 missing"></div>
+          <div class="heatmap-block hb-missing" title="PRD-055 missing"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--amber);">56%</span>
+      </div>
+
+      <!-- Show Detail: 11 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">Show Detail</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-full" title="PRD-056 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-057 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-058 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-059 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-060 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-061 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-062 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-063 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-064 full"></div>
+          <div class="heatmap-block hb-missing" title="PRD-065 missing"></div>
+          <div class="heatmap-block hb-missing" title="PRD-066 missing"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--green);">73%</span>
+      </div>
+
+      <!-- Person Detail: 4 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">Person Detail</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-missing" title="PRD-067 missing"></div>
+          <div class="heatmap-block hb-missing" title="PRD-068 missing"></div>
+          <div class="heatmap-block hb-missing" title="PRD-069 missing"></div>
+          <div class="heatmap-block hb-missing" title="PRD-070 missing"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--red);">0%</span>
+      </div>
+
+      <!-- Settings: 7 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">Settings & User Data</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-full" title="PRD-071 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-072 full"></div>
+          <div class="heatmap-block hb-missing" title="PRD-073 missing"></div>
+          <div class="heatmap-block hb-full" title="PRD-074 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-075 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-076 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-077 partial"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--amber);">71%</span>
+      </div>
+
+      <!-- AI Voice: 12 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">AI Voice & Personality</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-partial" title="PRD-078 partial"></div>
+          <div class="heatmap-block hb-missing" title="PRD-079 missing"></div>
+          <div class="heatmap-block hb-partial" title="PRD-080 partial"></div>
+          <div class="heatmap-block hb-missing" title="PRD-081 missing"></div>
+          <div class="heatmap-block hb-full" title="PRD-082 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-083 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-084 partial"></div>
+          <div class="heatmap-block hb-partial" title="PRD-085 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-086 full"></div>
+          <div class="heatmap-block hb-missing" title="PRD-087 missing"></div>
+          <div class="heatmap-block hb-full" title="PRD-088 full"></div>
+          <div class="heatmap-block hb-missing" title="PRD-089 missing"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--amber);">50%</span>
+      </div>
+
+      <!-- Data Persistence: 9 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">Data Persistence</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-full" title="PRD-090 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-091 partial"></div>
+          <div class="heatmap-block hb-missing" title="PRD-092 missing"></div>
+          <div class="heatmap-block hb-missing" title="PRD-093 missing"></div>
+          <div class="heatmap-block hb-partial" title="PRD-094 partial"></div>
+          <div class="heatmap-block hb-missing" title="PRD-095 missing"></div>
+          <div class="heatmap-block hb-missing" title="PRD-096 missing"></div>
+          <div class="heatmap-block hb-full" title="PRD-097 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-098 partial"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--red);">39%</span>
+      </div>
+
+      <!-- Infrastructure: 21 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">Infrastructure & Isolation</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-full" title="PRD-103 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-104 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-105 full"></div>
+          <div class="heatmap-block hb-missing" title="PRD-106 missing"></div>
+          <div class="heatmap-block hb-partial" title="PRD-107 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-108 full"></div>
+          <div class="heatmap-block hb-missing" title="PRD-109 missing"></div>
+          <div class="heatmap-block hb-full" title="PRD-110 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-111 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-112 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-113 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-114 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-115 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-116 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-117 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-118 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-119 full"></div>
+          <div class="heatmap-block hb-full" title="PRD-120 full"></div>
+          <div class="heatmap-block hb-partial" title="PRD-121 partial"></div>
+          <div class="heatmap-block hb-full" title="PRD-122 full"></div>
+          <div class="heatmap-block hb-missing" title="PRD-123 missing"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--green);">79%</span>
+      </div>
+
+      <!-- Nav & App Structure: 4 reqs -->
+      <div class="heatmap-row">
+        <span class="heatmap-area">Navigation & Structure</span>
+        <div class="heatmap-blocks">
+          <div class="heatmap-block hb-partial" title="PRD-099 partial"></div>
+          <div class="heatmap-block hb-partial" title="PRD-100 partial"></div>
+          <div class="heatmap-block hb-partial" title="PRD-101 partial"></div>
+          <div class="heatmap-block hb-partial" title="PRD-102 partial"></div>
+        </div>
+        <span class="heatmap-score" style="color: var(--amber);">50%</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- What's Strong -->
+  <div class="section">
+    <div class="section-title">What's Strong</div>
+    <div class="section-subtitle">Areas where the plan provides high confidence for execution.</div>
+    <div class="strengths-grid">
+      <div class="strength-card">
+        <h4>Infrastructure & Database (94.7% critical)</h4>
+        <p>Namespace isolation, user identity scoping, dev identity injection, and Supabase schema design are handled with precision — including SQL DDL and index definitions. The foundation is solid.</p>
+      </div>
+      <div class="strength-card">
+        <h4>AI Pipelines — Alchemy & Explore</h4>
+        <p>Concept generation counts, recommendation counts, shared-concept logic, and prompt template categories are all present. The AI backend is well-specified at the API route level.</p>
+      </div>
+      <div class="strength-card">
+        <h4>Show Detail — Narrative Hierarchy</h4>
+        <p>All 12 sections reproduced in correct order. Sticky toolbar, status chips, streaming availability, and seasonal content are addressed. This page is the most complete feature in the plan.</p>
+      </div>
+      <div class="strength-card">
+        <h4>Developer Experience</h4>
+        <p>One-command scripts for start, test, and data reset are concrete and complete. Environment variable interface with .env.example is fully specified with comments for each variable.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Top Gaps -->
+  <div class="section">
+    <div class="section-title">Top 5 Gaps</div>
+    <div class="section-subtitle">The highest-impact omissions that would be noticed first by users and stakeholders.</div>
+
+    <div class="gap-card">
+      <div class="gap-card-header">
+        <div class="gap-rank">1</div>
+        <h4>Person Detail Page — Entirely Absent</h4>
+        <span class="pill pill-important">important</span>
+      </div>
+      <div class="gap-card-ids">PRD-067 &middot; PRD-068 &middot; PRD-069 &middot; PRD-070</div>
+      <p>The plan has no Person Detail page — no route, no component, no data fetching. The PRD defines this as a major feature (Section 7.6) with image gallery, filmography grouped by year, analytics charts, and credit-to-show navigation.</p>
+      <div class="impact">User impact: Tapping a cast member on Show Detail leads to a 404. The entire "talent deep-dive" journey is broken, and Cast & Crew strands on Show Detail have no destination.</div>
+    </div>
+
+    <div class="gap-card">
+      <div class="gap-card-header">
+        <div class="gap-rank">2</div>
+        <h4>Filtering System — Tag, Data, and Media-Type Filters Missing</h4>
+        <span class="pill pill-important">important</span>
+      </div>
+      <div class="gap-card-ids">PRD-014 &middot; PRD-015 &middot; PRD-016</div>
+      <p>Only status-based filtering exists. The sidebar tag filter system ("one per tag, plus No Tags"), data filters (genre, decade, community score), and the media-type toggle (All / Movies / TV) are entirely absent.</p>
+      <div class="impact">User impact: A collection with 50+ shows becomes unusable. No way to slice a library by genre, decade, or user-created tags — the backbone of the "tag-driven organisation" user journey.</div>
+    </div>
+
+    <div class="gap-card">
+      <div class="gap-card-header">
+        <div class="gap-rank">3</div>
+        <h4>Alchemy Chaining and Backtracking</h4>
+        <span class="pill pill-important">important</span>
+      </div>
+      <div class="gap-card-ids">PRD-043 &middot; PRD-044</div>
+      <p>The four-step Alchemy flow is covered, but chaining ("More Alchemy!" using results as new inputs) and backtracking (changing input shows clears downstream concepts/results) are both omitted.</p>
+      <div class="impact">User impact: Alchemy becomes a one-shot tool instead of the iterative discovery loop described in the PRD. A QA reviewer would flag this immediately since the PRD describes chaining as a core interaction.</div>
+    </div>
+
+    <div class="gap-card">
+      <div class="gap-card-header">
+        <div class="gap-rank">4</div>
+        <h4>Tile Indicators and Data Continuity</h4>
+        <span class="pill pill-important">important</span>
+      </div>
+      <div class="gap-card-ids">PRD-092 &middot; PRD-093</div>
+      <p>No in-collection or user-rating badges on show tiles. Data continuity across version updates is also absent — no migration strategy for schema changes.</p>
+      <div class="impact">User impact: Users cannot scan their library or search results to see which shows are saved or rated at a glance. A schema change could silently break existing collections.</div>
+    </div>
+
+    <div class="gap-card">
+      <div class="gap-card-header">
+        <div class="gap-rank">5</div>
+        <h4>Supabase Key Separation</h4>
+        <span class="pill pill-important">important</span>
+      </div>
+      <div class="gap-card-ids">PRD-109</div>
+      <p>The infrastructure rider requires browser/client code to use only the anon/public Supabase key, with elevated keys (service role) restricted to server-side routes. The plan configures Supabase and mentions RLS but never addresses key separation.</p>
+      <div class="impact">User impact: A build that exposes the service role key to the client would violate credential handling rules and create a security boundary failure.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- At Risk: Partial Coverage -->
+  <div class="section">
+    <div class="section-title">Partial Coverage — Needs Specification</div>
+    <div class="section-subtitle">These requirements are acknowledged but lack the detail needed for correct implementation. 38 requirements at partial coverage.</div>
+    <div class="risk-table-wrap">
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Requirement</th>
+            <th>Severity</th>
+            <th>What's Missing</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="req-id">PRD-002</td>
+            <td>User overlay displayed everywhere</td>
+            <td><span class="pill pill-critical">critical</span></td>
+            <td class="gap-desc">Not mandated in search results, AI outputs, or recommendation tiles</td>
+          </tr>
+          <tr>
+            <td class="req-id">PRD-094</td>
+            <td>Backend source of truth; safe client clear</td>
+            <td><span class="pill pill-critical">critical</span></td>
+            <td class="gap-desc">Implied by architecture but not explicitly guaranteed</td>
+          </tr>
+          <tr>
+            <td class="req-id">PRD-005</td>
+            <td>Default save: Later + Interested</td>
+            <td><span class="pill pill-important">important</span></td>
+            <td class="gap-desc">Only tag-save default specified; general default policy undefined</td>
+          </tr>
+          <tr>
+            <td class="req-id">PRD-011</td>
+            <td>Interested/Excited maps to Later + interest</td>
+            <td><span class="pill pill-important">important</span></td>
+            <td class="gap-desc">Excited listed as status chip; mapping to Later + interest not explained</td>
+          </tr>
+          <tr>
+            <td class="req-id">PRD-022</td>
+            <td>Results in poster grid with collection markers</td>
+            <td><span class="pill pill-important">important</span></td>
+            <td class="gap-desc">Grid mentioned but poster layout and in-collection markers absent</td>
+          </tr>
+          <tr>
+            <td class="req-id">PRD-028</td>
+            <td>Structured output delimiter format</td>
+            <td><span class="pill pill-important">important</span></td>
+            <td class="gap-desc">Parsing planned but Title::externalId::mediaType contract not specified</td>
+          </tr>
+          <tr>
+            <td class="req-id">PRD-035</td>
+            <td>Scoop structured as mini blog post</td>
+            <td><span class="pill pill-important">important</span></td>
+            <td class="gap-desc">Label used but subsections (take, stack-up, centerpiece, fit, verdict) not enumerated</td>
+          </tr>
+          <tr>
+            <td class="req-id">PRD-078</td>
+            <td>Consistent persona across AI surfaces</td>
+            <td><span class="pill pill-important">important</span></td>
+            <td class="gap-desc">Persona defined per surface but cross-surface consistency not mandated</td>
+          </tr>
+          <tr>
+            <td class="req-id">PRD-084</td>
+            <td>AI recs map to real selectable shows</td>
+            <td><span class="pill pill-important">important</span></td>
+            <td class="gap-desc">Catalog search used for resolution but not explicitly required as a contract</td>
+          </tr>
+          <tr>
+            <td class="req-id">PRD-102</td>
+            <td>Find/Discover hub with mode switcher</td>
+            <td><span class="pill pill-important">important</span></td>
+            <td class="gap-desc">Plan uses separate page routes; PRD wants a single hub with mode switching</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size: 12px; color: var(--text-dim); margin-top: 10px;">Showing 10 of 38 partial requirements. 2 critical, 29 important, 7 detail tier.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Remediation -->
+  <div class="section">
+    <div class="section-title">Remediation Roadmap</div>
+    <div class="section-subtitle">Three categories of remaining work to close the gap between plan and PRD.</div>
+    <div class="remediation-grid">
+      <div class="remediation-card">
+        <h4>Missing Plan Sections</h4>
+        <span class="tag">New architecture needed</span>
+        <ul>
+          <li>Person Detail page — route, components, hooks, data fetching</li>
+          <li>Filtering system — tag sidebar, data filters, media-type toggle</li>
+          <li>Find/Discover hub — mode switcher instead of separate routes</li>
+        </ul>
+      </div>
+      <div class="remediation-card">
+        <h4>Missing Interaction Specs</h4>
+        <span class="tag">Acceptance criteria for existing features</span>
+        <ul>
+          <li>Alchemy chaining and backtracking rules</li>
+          <li>Concept selection clearing downstream</li>
+          <li>Tile indicator badges (in-collection + rating)</li>
+          <li>Removal confirmation suppression</li>
+          <li>Scoop toggle copy states</li>
+          <li>Empty state messages</li>
+          <li>Data continuity / migration strategy</li>
+        </ul>
+      </div>
+      <div class="remediation-card">
+        <h4>Missing AI Contracts</h4>
+        <span class="tag">Testable output requirements</span>
+        <ul>
+          <li>Scoop subsection structure (take, stack-up, etc.)</li>
+          <li>Mentioned-shows delimiter format</li>
+          <li>Concept quality constraints (specificity, diversity)</li>
+          <li>Cross-surface persona consistency rules</li>
+          <li>Reason-per-recommendation enforcement</li>
+          <li>Supabase key separation (security)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Bottom Line -->
+  <div class="bottom-line">
+    <h3>The Bottom Line</h3>
+    <p>This plan is structurally sound and covers the core happy-path features. The critical tier at <strong style="color: var(--green);">94.7%</strong> means the plan understands what needs to exist. But the important tier at <strong style="color: var(--amber);">58.7%</strong> reveals it hasn't specified how much of it should work, and the detail tier at <strong style="color: var(--red);">38.6%</strong> shows the fit-and-finish specs have been largely ignored.</p>
+    <p style="margin-top: 12px;">The gaps are not random — they cluster around "second-use" and "power-user" scenarios that distinguish a feature demo from a product. An entire page (Person Detail) is missing. The filtering system that makes large collections usable is absent. Alchemy's signature chaining interaction is omitted. These are the differences between a build that passes a walkthrough and one that holds up to real use.</p>
+    <p style="margin-top: 12px; color: var(--text); font-weight: 600;">Recommendation: Address the top 5 gaps and partial critical requirements before executing. The infrastructure and AI foundations are strong enough to build on — but the behavioural layer needs to be specified before handing this plan to a development team.</p>
+  </div>
+
+</div>
+</body>
+</html>
