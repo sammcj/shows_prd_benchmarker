@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Coverage Report — Showbiz PRD</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f0f2f5;
+    --card: #ffffff;
+    --navy: #1e3a5f;
+    --navy-light: #2a5280;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --green-border: #bbf7d0;
+    --amber: #d97706;
+    --amber-bg: #fffbeb;
+    --amber-border: #fde68a;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --red-border: #fecaca;
+    --blue: #2563eb;
+    --blue-bg: #eff6ff;
+    --blue-border: #bfdbfe;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    color: white;
+    padding: 40px 0 36px;
+  }
+  header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  header .subtitle {
+    font-size: 15px;
+    opacity: 0.75;
+    font-weight: 400;
+  }
+  header .date {
+    font-size: 14px;
+    opacity: 0.6;
+    text-align: right;
+  }
+
+  /* Main */
+  main { padding: 32px 0 64px; }
+
+  /* Section titles */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px 32px;
+  }
+
+  /* === SCORE HERO === */
+  .score-hero {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 40px;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  .gauge-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .gauge-wrap svg { display: block; }
+  .gauge-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    text-align: center;
+  }
+  .score-text {
+    font-size: 42px;
+    font-weight: 800;
+    fill: var(--text);
+  }
+  .score-unit {
+    font-size: 18px;
+    font-weight: 600;
+    fill: var(--text-muted);
+  }
+  .gauge-track { stroke: #e5e7eb; }
+  .gauge-fill { transition: stroke-dasharray 1.2s ease-out; }
+
+  .score-context h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .score-context p {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    line-height: 1.65;
+  }
+
+  /* Severity cards row */
+  .severity-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .severity-card {
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .severity-card.critical { background: var(--red-bg); border: 1px solid var(--red-border); }
+  .severity-card.important { background: var(--amber-bg); border: 1px solid var(--amber-border); }
+  .severity-card.detail { background: var(--blue-bg); border: 1px solid var(--blue-border); }
+
+  .sev-gauge { flex-shrink: 0; }
+  .sev-info .sev-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 2px;
+  }
+  .severity-card.critical .sev-title { color: var(--red); }
+  .severity-card.important .sev-title { color: var(--amber); }
+  .severity-card.detail .sev-title { color: var(--blue); }
+  .sev-info .sev-score {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .sev-info .sev-detail {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  /* === COVERAGE ARC === */
+  .arc-section { margin-top: 32px; margin-bottom: 32px; }
+  .arc-timeline {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    position: relative;
+    padding: 20px 0;
+  }
+  .arc-timeline::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--amber) 0%, var(--amber) 40%, var(--green) 70%, var(--green) 100%);
+    border-radius: 2px;
+    transform: translateY(-50%);
+    z-index: 0;
+  }
+  .arc-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+  .arc-dot {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .arc-node:nth-child(1) .arc-dot { background: var(--amber); }
+  .arc-node:nth-child(2) .arc-dot { background: #65a30d; }
+  .arc-node:nth-child(3) .arc-dot { background: var(--green); }
+  .arc-node .arc-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .arc-node .arc-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    max-width: 200px;
+    line-height: 1.5;
+  }
+
+  /* === AREA BREAKDOWN === */
+  .area-section { margin-bottom: 32px; }
+  .area-list { display: flex; flex-direction: column; gap: 10px; }
+  .area-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 60px;
+    align-items: center;
+    gap: 16px;
+  }
+  .area-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    text-align: right;
+  }
+  .area-bar-track {
+    height: 24px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  .area-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 1s ease-out;
+    position: relative;
+  }
+  .area-bar-fill.green { background: linear-gradient(90deg, #22c55e, #16a34a); }
+  .area-bar-fill.lime { background: linear-gradient(90deg, #84cc16, #65a30d); }
+  .area-bar-fill.amber { background: linear-gradient(90deg, #fbbf24, #d97706); }
+  .area-bar-fill.red { background: linear-gradient(90deg, #f87171, #dc2626); }
+  .area-bar-fill.zero { background: #e5e7eb; width: 2px !important; }
+
+  .area-pct {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .area-legend {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .area-legend span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .area-legend .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+  }
+
+  /* === STRENGTHS & RISKS === */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  .panel-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-title .icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: white;
+  }
+  .icon.green { background: var(--green); }
+  .icon.red { background: var(--red); }
+
+  .strength-item, .risk-item {
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .strength-item {
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+  }
+  .strength-item strong { color: #15803d; }
+  .risk-item {
+    background: var(--red-bg);
+    border: 1px solid var(--red-border);
+  }
+  .risk-item strong { color: var(--red); }
+
+  .risk-item .gap-id {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--red);
+    color: white;
+    padding: 1px 7px;
+    border-radius: 4px;
+    margin-right: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  /* === TOP GAPS DETAIL === */
+  .gaps-section { margin-bottom: 32px; }
+  .gap-card {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 20px;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .gap-card:last-child { border-bottom: none; }
+  .gap-rank {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 2px;
+  }
+  .gap-rank .rank-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--red);
+    line-height: 1;
+  }
+  .gap-rank .rank-sev {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    background: var(--red);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+  }
+  .gap-body h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .gap-body .gap-id-inline {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .gap-body p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* === EXEC SUMMARY === */
+  .exec-section .card {
+    border-left: 4px solid var(--navy);
+  }
+  .exec-section h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .exec-section p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+  .exec-section p:last-child { margin-bottom: 0; }
+
+  /* === REQ COUNTS BAR === */
+  .req-counts {
+    display: flex;
+    gap: 2px;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .req-counts .seg { height: 100%; transition: width 1s ease-out; }
+  .req-counts .seg.full { background: var(--green); }
+  .req-counts .seg.partial { background: #fbbf24; }
+  .req-counts .seg.missing { background: #fca5a5; }
+
+  .req-counts-legend {
+    display: flex;
+    gap: 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .req-counts-legend strong { color: var(--text); }
+
+  /* === STACKED BAR LARGE === */
+  .stacked-hero {
+    display: flex;
+    gap: 2px;
+    height: 40px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 16px 0;
+  }
+  .stacked-hero .seg {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    transition: width 1s ease-out;
+  }
+  .stacked-hero .seg.full { background: var(--green); }
+  .stacked-hero .seg.partial { background: var(--amber); }
+  .stacked-hero .seg.missing { background: #fca5a5; color: var(--red); }
+
+  /* === CALLOUT === */
+  .callout {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+  }
+  .callout.amber { background: var(--amber-bg); border: 1px solid var(--amber-border); }
+  .callout .callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .callout p { font-size: 14px; color: var(--text); line-height: 1.6; }
+
+  /* === FOOTER === */
+  footer {
+    text-align: center;
+    padding: 24px 0;
+    font-size: 12px;
+    color: var(--text-light);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div>
+      <h1>Showbiz PRD - Plan Coverage Report</h1>
+      <div class="subtitle">How ready is this plan to build from? A coverage evaluation across 141 requirements.</div>
+    </div>
+    <div class="date">Evaluated Feb 2026</div>
+  </div>
+</header>
+
+<main>
+<div class="container">
+
+  <!-- SCORE HERO -->
+  <section class="card score-hero" style="margin-top:-20px; position:relative; z-index:1;">
+    <div class="gauge-wrap">
+      <svg width="220" height="220" viewBox="0 0 220 220">
+        <circle cx="110" cy="110" r="90" fill="none" stroke-width="16" class="gauge-track" transform="rotate(-90 110 110)"/>
+        <circle cx="110" cy="110" r="90" fill="none" stroke-width="16" stroke="#d97706"
+          stroke-dasharray="0 565.49" stroke-linecap="round" class="gauge-fill" id="mainGauge"
+          transform="rotate(-90 110 110)" data-target="352.87"/>
+        <text x="110" y="105" text-anchor="middle" class="score-text">62.4</text>
+        <text x="110" y="128" text-anchor="middle" class="score-unit">% coverage</text>
+      </svg>
+      <div class="gauge-label">141 PRD requirements evaluated</div>
+    </div>
+    <div class="score-context">
+      <h2>Structurally sound, behaviourally incomplete</h2>
+      <p>The plan covers infrastructure, AI contracts, and data architecture well, but has significant gaps in user-facing business rules, navigation architecture, and an entire feature area (Person Detail). An implementer would have a solid data layer but would need to guess at critical interaction behaviours.</p>
+
+      <div class="stacked-hero">
+        <div class="seg full" style="width:52.5%">74 full</div>
+        <div class="seg partial" style="width:19.9%">28 partial</div>
+        <div class="seg missing" style="width:27.6%">39 missing</div>
+      </div>
+      <div class="req-counts-legend">
+        <span><strong>74</strong> fully covered</span>
+        <span><strong>28</strong> partially covered</span>
+        <span><strong>39</strong> missing entirely</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEVERITY BREAKDOWN -->
+  <div class="severity-row" style="margin-bottom:32px">
+    <div class="severity-card critical">
+      <div class="sev-gauge">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="26" fill="none" stroke-width="7" stroke="#fecaca" transform="rotate(-90 32 32)"/>
+          <circle cx="32" cy="32" r="26" fill="none" stroke-width="7" stroke="#dc2626"
+            stroke-dasharray="0 163.36" stroke-linecap="round" class="gauge-fill" data-target="123.70"
+            transform="rotate(-90 32 32)"/>
+        </svg>
+      </div>
+      <div class="sev-info">
+        <div class="sev-title">Critical</div>
+        <div class="sev-score">75.7%</div>
+        <div class="sev-detail">23 full + 7 partial of 35</div>
+      </div>
+    </div>
+    <div class="severity-card important">
+      <div class="sev-gauge">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="26" fill="none" stroke-width="7" stroke="#fde68a" transform="rotate(-90 32 32)"/>
+          <circle cx="32" cy="32" r="26" fill="none" stroke-width="7" stroke="#d97706"
+            stroke-dasharray="0 163.36" stroke-linecap="round" class="gauge-fill" data-target="107.98"
+            transform="rotate(-90 32 32)"/>
+        </svg>
+      </div>
+      <div class="sev-info">
+        <div class="sev-title">Important</div>
+        <div class="sev-score">66.1%</div>
+        <div class="sev-detail">47 full + 17 partial of 84</div>
+      </div>
+    </div>
+    <div class="severity-card detail">
+      <div class="sev-gauge">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="26" fill="none" stroke-width="7" stroke="#bfdbfe" transform="rotate(-90 32 32)"/>
+          <circle cx="32" cy="32" r="26" fill="none" stroke-width="7" stroke="#2563eb"
+            stroke-dasharray="0 163.36" stroke-linecap="round" class="gauge-fill" data-target="44.60"
+            transform="rotate(-90 32 32)"/>
+        </svg>
+      </div>
+      <div class="sev-info">
+        <div class="sev-title">Detail</div>
+        <div class="sev-score">27.3%</div>
+        <div class="sev-detail">4 full + 4 partial of 22</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COVERAGE ARC -->
+  <section class="arc-section">
+    <div class="section-label">The Remediation Arc</div>
+    <div class="card">
+      <div class="arc-timeline">
+        <div class="arc-node">
+          <div class="arc-dot">62%</div>
+          <div class="arc-title">Current Plan</div>
+          <div class="arc-desc">Strong on infrastructure and AI specs. Gaps in business rules and UX flows.</div>
+        </div>
+        <div class="arc-node">
+          <div class="arc-dot">~74%</div>
+          <div class="arc-title">After Top 3 Clusters</div>
+          <div class="arc-desc">Fix collection rules, add Person Detail, specify navigation shell.</div>
+        </div>
+        <div class="arc-node">
+          <div class="arc-dot">100</div>
+          <div class="arc-title">Full Remediation</div>
+          <div class="arc-desc">Address all 39 missing + 28 partial requirements for complete coverage.</div>
+        </div>
+      </div>
+      <div class="callout amber">
+        <div class="callout-icon">&#9888;</div>
+        <p><strong>The biggest lift is not new architecture</strong> - the data structures and APIs already exist. The primary remediation is writing business rule specifications (acceptance criteria for existing endpoints) and adding one missing page (Person Detail). Navigation requires a layout/shell component specification.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- AREA BREAKDOWN -->
+  <section class="area-section">
+    <div class="section-label">Coverage by Feature Area</div>
+    <div class="card">
+      <div class="area-list" id="areaList"></div>
+      <div class="area-legend" style="margin-top:20px">
+        <span><div class="dot" style="background:var(--green)"></div> 70%+</span>
+        <span><div class="dot" style="background:#84cc16"></div> 60-69%</span>
+        <span><div class="dot" style="background:#fbbf24"></div> 40-59%</span>
+        <span><div class="dot" style="background:#f87171"></div> &lt;40%</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STRENGTHS + RISKS -->
+  <div class="two-col">
+    <section>
+      <div class="section-label">What's Strong</div>
+      <div class="card">
+        <div class="panel-title"><div class="icon green">&#10003;</div> Well-Covered Areas</div>
+
+        <div class="strength-item">
+          <strong>Infrastructure &amp; Isolation (81.8%)</strong><br>
+          Namespace partitioning, user identity, dev injection, Supabase integration, env vars, and migration-ready schema are all concretely specified with SQL and explicit rules.
+        </div>
+        <div class="strength-item">
+          <strong>AI Prompt Contracts &amp; Concepts (80%)</strong><br>
+          Scoop structure, Ask mention format, concept generation rules, and recommendation contracts are all present with enough specificity to implement directly.
+        </div>
+        <div class="strength-item">
+          <strong>Show Detail Page (89.3%)</strong><br>
+          All 11+ required sections listed, fixed toolbar specified, sub-feature components named. The most complete feature specification in the plan.
+        </div>
+        <div class="strength-item">
+          <strong>Data Merge Strategy (68.2%)</strong><br>
+          selectFirstNonEmpty for catalog fields, timestamp-based resolution for user fields. One of the most precisely specified subsystems in the entire plan.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">What's At Risk</div>
+      <div class="card">
+        <div class="panel-title"><div class="icon red">!</div> Critical Gaps</div>
+
+        <div class="risk-item">
+          <strong>Collection Management Rules (30.8%)</strong><br>
+          Trigger behaviours are systematically absent. The plan has data structures and APIs but does not specify what happens when a user rates, tags, or changes status on an unsaved show.
+        </div>
+        <div class="risk-item">
+          <strong>Person Detail (0%)</strong><br>
+          Entirely missing. No page definition, no API routes, no layout. Users tapping a cast member on Show Detail would reach a dead end.
+        </div>
+        <div class="risk-item">
+          <strong>Navigation Architecture (41.7%)</strong><br>
+          Individual pages exist but the persistent navigation shell, Find/Discover hub with mode switcher, sidebar filter panel, and media-type toggle are all unspecified.
+        </div>
+        <div class="risk-item">
+          <strong>Security Compliance (2 critical gaps)</strong><br>
+          <span class="gap-id">PRD-117</span> <span class="gap-id">PRD-119</span> No .gitignore config and no explicit secret management policy. Risk of committed credentials in a benchmark context.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- TOP 5 GAPS -->
+  <section class="gaps-section">
+    <div class="section-label">Top 5 Gaps and Why They Matter</div>
+    <div class="card" style="padding:8px 0">
+
+      <div class="gap-card">
+        <div class="gap-rank">
+          <div class="rank-num">1</div>
+          <div class="rank-sev">Critical</div>
+        </div>
+        <div class="gap-body">
+          <h4>Individual show removal from collection <span class="gap-id-inline">PRD-009</span></h4>
+          <p>The plan describes namespace-level data resets but never addresses removing a single show. Without this, users have no way to uncollect a show - the most fundamental CRUD operation in collection management. Every user journey involving collection maintenance breaks.</p>
+        </div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-rank">
+          <div class="rank-num">2</div>
+          <div class="rank-sev">Critical</div>
+        </div>
+        <div class="gap-body">
+          <h4>Default values on implicit save <span class="gap-id-inline">PRD-005</span></h4>
+          <p>APIs exist for updating status, interest, tags, and rating, but no defaults are specified for implicit saves. Without defaults (status=Later, interest=Interested), the saving triggers cannot produce consistent collection membership, and status-grouped Collection Home breaks unpredictably.</p>
+        </div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-rank">
+          <div class="rank-num">3</div>
+          <div class="rank-sev">Critical</div>
+        </div>
+        <div class="gap-body">
+          <h4>Rate-to-save defaults status to Done <span class="gap-id-inline">PRD-006</span></h4>
+          <p>Rating an unsaved show should save it with status=Done. The plan has a rating API and UI element but does not define this business rule. A user who rates a show from Search will not see it in their library without this rule.</p>
+        </div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-rank">
+          <div class="rank-num">4</div>
+          <div class="rank-sev">Critical</div>
+        </div>
+        <div class="gap-body">
+          <h4>.gitignore excludes .env* secrets <span class="gap-id-inline">PRD-117</span></h4>
+          <p>The plan defines environment variables and a .env.example but never mentions .gitignore configuration. In a benchmark context where secrets are injected via env files, omitting .gitignore is a security compliance failure that could result in committed credentials.</p>
+        </div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-rank">
+          <div class="rank-num">5</div>
+          <div class="rank-sev">Critical</div>
+        </div>
+        <div class="gap-body">
+          <h4>No explicit secret management policy <span class="gap-id-inline">PRD-119</span></h4>
+          <p>While the architecture implies key separation (server-only keys), the absence of a stated rule means a developer could commit API keys or service role secrets without violating any documented constraint. This must be an explicit, enforceable policy.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <section class="exec-section">
+    <div class="section-label">Executive Summary</div>
+    <div class="card">
+      <h3>Bottom Line</h3>
+      <p>This plan reads as a strong technical blueprint for <em>how to build the data layer and AI integrations</em>, but an incomplete specification for <em>how the product actually behaves when a user interacts with it</em>. An implementer would produce a working database, functional API routes, and on-brand AI outputs, but would have to guess at critical user-facing behaviours: implicit saves, removal semantics, default values, and navigation flow.</p>
+      <p>The 62.4% score reflects a clear split. Where the plan goes deep, it goes very deep: infrastructure isolation is production-ready, AI prompt contracts are implementable as-is, the Show Detail page is thoroughly sectioned. But where it is silent, the silence is in core user journeys - the collection lifecycle state machine, the navigation shell users live in, and an entire Person Detail feature that is referenced but never defined.</p>
+      <p><strong>The most likely failure mode if executed as-is:</strong> a user rates a show from Search, expects it to appear in their library as "Done," and it either does not appear or appears with no status. They then try to remove it and find no mechanism to do so. This breaks the two most fundamental user journeys and would be the first thing a QA reviewer flags.</p>
+      <p><strong>Remediation is tractable.</strong> The weakness clusters do not require rethinking the architecture. Collection management gaps need business rule specifications (acceptance criteria for existing APIs). Person Detail needs a new plan section following the existing page pattern. Navigation needs a layout component specification. The data structures and infrastructure already support all of it.</p>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<footer>
+  <div class="container">Plan Evaluation Report &middot; Generated from PLAN_EVAL.md</div>
+</footer>
+
+<script>
+(function() {
+  // Area data sorted by coverage descending
+  var areas = [
+    { name: 'Explore Similar',           pct: 100,  full: 3,  partial: 0, missing: 0 },
+    { name: 'Show Detail Page',          pct: 89.3, full: 12, partial: 1, missing: 1 },
+    { name: 'Infrastructure & Isolation', pct: 81.8, full: 18, partial: 0, missing: 4 },
+    { name: 'Concept System',            pct: 80.0, full: 8,  partial: 0, missing: 2 },
+    { name: 'AI Scoop',                  pct: 68.8, full: 5,  partial: 1, missing: 2 },
+    { name: 'AI Voice & Quality',        pct: 68.8, full: 5,  partial: 1, missing: 2 },
+    { name: 'Data Persistence & Merge',  pct: 68.2, full: 5,  partial: 5, missing: 1 },
+    { name: 'Settings & Data Mgmt',      pct: 64.3, full: 4,  partial: 1, missing: 2 },
+    { name: 'AI Chat (Ask)',             pct: 61.1, full: 4,  partial: 3, missing: 2 },
+    { name: 'Tags & Filtering',          pct: 50.0, full: 2,  partial: 2, missing: 2 },
+    { name: 'Alchemy',                   pct: 43.8, full: 3,  partial: 1, missing: 4 },
+    { name: 'Collection Home',           pct: 41.7, full: 2,  partial: 1, missing: 3 },
+    { name: 'Search',                    pct: 41.7, full: 2,  partial: 1, missing: 3 },
+    { name: 'Navigation & App Structure',pct: 41.7, full: 0,  partial: 5, missing: 1 },
+    { name: 'Collection Management',     pct: 30.8, full: 1,  partial: 6, missing: 6 },
+    { name: 'Person Detail',             pct: 0,    full: 0,  partial: 0, missing: 4 }
+  ];
+
+  function barColor(pct) {
+    if (pct >= 70) return 'green';
+    if (pct >= 60) return 'lime';
+    if (pct >= 40) return 'amber';
+    if (pct > 0)   return 'red';
+    return 'zero';
+  }
+
+  var list = document.getElementById('areaList');
+  areas.forEach(function(a) {
+    var row = document.createElement('div');
+    row.className = 'area-row';
+    var cls = barColor(a.pct);
+    row.innerHTML =
+      '<div class="area-name">' + a.name + '</div>' +
+      '<div class="area-bar-track"><div class="area-bar-fill ' + cls + '" style="width:0%" data-width="' + Math.max(a.pct, 0.5) + '%"></div></div>' +
+      '<div class="area-pct">' + (a.pct === 0 ? '0%' : a.pct.toFixed(1) + '%') + '</div>';
+    list.appendChild(row);
+  });
+
+  // Animate on load
+  setTimeout(function() {
+    // Main gauge
+    var mg = document.getElementById('mainGauge');
+    mg.setAttribute('stroke-dasharray', mg.dataset.target + ' 565.49');
+
+    // Severity gauges
+    document.querySelectorAll('.gauge-fill[data-target]').forEach(function(el) {
+      if (el.id === 'mainGauge') return;
+      el.setAttribute('stroke-dasharray', el.dataset.target + ' 163.36');
+    });
+
+    // Area bars
+    document.querySelectorAll('.area-bar-fill[data-width]').forEach(function(el) {
+      el.style.width = el.dataset.width;
+    });
+  }, 200);
+})();
+</script>
+
+</body>
+</html>
