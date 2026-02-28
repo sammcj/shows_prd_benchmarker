@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Coverage Report — Showbiz PRD Benchmark</title>
+<style>
+  :root {
+    --bg: #f5f6fa;
+    --surface: #ffffff;
+    --surface-alt: #f0f1f6;
+    --ink: #1b1f3b;
+    --ink-muted: #5a5f7d;
+    --ink-light: #8b90a8;
+    --border: #e2e4ee;
+    --full: #0ea572;
+    --full-bg: #e6f9f1;
+    --partial: #d97b0e;
+    --partial-bg: #fef3e2;
+    --missing: #dc3545;
+    --missing-bg: #fde8ea;
+    --accent: #3b5bdb;
+    --accent-bg: #edf0ff;
+    --header-bg: #1b1f3b;
+    --header-ink: #e8eaef;
+    --critical-badge: #dc3545;
+    --important-badge: #d97b0e;
+    --detail-badge: #6c757d;
+    --radius: 10px;
+    --shadow-sm: 0 1px 3px rgba(27,31,59,0.06);
+    --shadow-md: 0 4px 16px rgba(27,31,59,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+  }
+
+  /* ── Header ─────────────────────────── */
+  .hero {
+    background: var(--header-bg);
+    color: var(--header-ink);
+    padding: 48px 24px 56px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--full), var(--partial), var(--missing));
+  }
+  .hero-label {
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-bottom: 8px;
+  }
+  .hero h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+  .hero-sub {
+    font-size: 14px;
+    color: #9ba0b8;
+    margin-bottom: 40px;
+  }
+
+  /* Radial gauge */
+  .gauge-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 56px;
+    flex-wrap: wrap;
+  }
+  .gauge-block { text-align: center; }
+  .gauge-block.main svg { width: 180px; height: 180px; }
+  .gauge-block.secondary svg { width: 110px; height: 110px; }
+  .gauge-label {
+    font-size: 12px;
+    color: #9ba0b8;
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .gauge-score-main {
+    font-size: 42px;
+    font-weight: 800;
+    fill: #ffffff;
+  }
+  .gauge-score-sub {
+    font-size: 22px;
+    font-weight: 700;
+    fill: #ffffff;
+  }
+  .gauge-track { fill: none; stroke: #2d3154; stroke-width: 10; }
+  .gauge-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1.2s ease; }
+
+  /* ── Section scaffolding ─────────────── */
+  .section { margin-top: 40px; }
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--ink);
+  }
+  .section-desc {
+    font-size: 14px;
+    color: var(--ink-muted);
+    margin-bottom: 20px;
+  }
+
+  /* ── Story arc ──────────────────────── */
+  .arc {
+    display: grid;
+    grid-template-columns: 1fr 48px 1fr 48px 1fr;
+    align-items: center;
+    gap: 0;
+    margin-top: 32px;
+  }
+  .arc-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+  .arc-step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .arc-step h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .arc-step p { font-size: 13px; color: var(--ink-muted); }
+  .arc-arrow {
+    text-align: center;
+    color: var(--ink-light);
+    font-size: 20px;
+  }
+
+  /* ── Distribution bar ──────────────── */
+  .dist-bar-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .dist-bar {
+    display: flex;
+    height: 36px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .dist-bar span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    transition: width 1s ease;
+  }
+  .dist-bar .full { background: var(--full); }
+  .dist-bar .partial { background: var(--partial); }
+  .dist-bar .miss { background: var(--missing); }
+  .dist-legend {
+    display: flex;
+    gap: 28px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .dist-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink-muted);
+  }
+  .dist-legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+  }
+
+  /* ── Two-col layout ────────────────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 800px) {
+    .two-col { grid-template-columns: 1fr; }
+    .arc { grid-template-columns: 1fr; gap: 12px; }
+    .arc-arrow { transform: rotate(90deg); }
+    .gauge-row { gap: 24px; }
+  }
+
+  /* ── Cards ──────────────────────────── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .card p, .card li {
+    font-size: 14px;
+    color: var(--ink-muted);
+    line-height: 1.65;
+  }
+  .card ul {
+    list-style: none;
+    padding: 0;
+  }
+  .card ul li {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--surface-alt);
+  }
+  .card ul li:last-child { border-bottom: none; }
+  .card ul li::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-right: 10px;
+    position: relative;
+    top: -1px;
+  }
+  .strength-card ul li::before { background: var(--full); }
+  .risk-card ul li::before { background: var(--missing); }
+
+  .card-header-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+  .strength-card .card-header-icon { background: var(--full-bg); }
+  .risk-card .card-header-icon { background: var(--missing-bg); }
+
+  /* ── Gap cards ──────────────────────── */
+  .gap-list { display: flex; flex-direction: column; gap: 16px; }
+  .gap-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    box-shadow: var(--shadow-sm);
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 16px;
+    align-items: start;
+    border-left: 4px solid var(--missing);
+  }
+  .gap-card.gap-critical { border-left-color: var(--critical-badge); }
+  .gap-rank {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--missing-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--missing);
+  }
+  .gap-card.gap-critical .gap-rank {
+    background: #fde8ea;
+    color: var(--critical-badge);
+  }
+  .gap-id {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .gap-sev {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+  }
+  .gap-sev.critical { background: #fde8ea; color: var(--critical-badge); }
+  .gap-sev.important { background: var(--partial-bg); color: var(--partial); }
+  .gap-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 4px 0 6px;
+    color: var(--ink);
+  }
+  .gap-body {
+    font-size: 13px;
+    color: var(--ink-muted);
+    line-height: 1.65;
+  }
+
+  /* ── Functional area heatmap ────────── */
+  .area-grid { display: flex; flex-direction: column; gap: 8px; }
+  .area-row {
+    display: grid;
+    grid-template-columns: 220px 1fr 56px;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+  }
+  .area-name {
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .area-bar-track {
+    height: 22px;
+    background: var(--surface-alt);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+  }
+  .area-bar-track span {
+    height: 100%;
+    transition: width 1s ease;
+  }
+  .area-bar-track .ab-full { background: var(--full); }
+  .area-bar-track .ab-partial { background: var(--partial); }
+  .area-bar-track .ab-missing { background: var(--missing); }
+  .area-pct {
+    font-weight: 700;
+    text-align: right;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  .pct-high { color: var(--full); }
+  .pct-mid { color: var(--partial); }
+  .pct-low { color: var(--missing); }
+
+  /* ── Remediation ───────────────────── */
+  .remed-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 800px) {
+    .remed-grid { grid-template-columns: 1fr; }
+  }
+  .remed-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    padding-top: 32px;
+  }
+  .remed-card::before {
+    content: attr(data-type);
+    position: absolute;
+    top: -1px; left: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 0 0 6px 6px;
+    color: #fff;
+  }
+  .remed-card.arch::before { background: var(--missing); }
+  .remed-card.scope::before { background: var(--partial); }
+  .remed-card.spec::before { background: var(--accent); }
+  .remed-card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .remed-card p {
+    font-size: 13px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+  .remed-items {
+    list-style: none;
+    padding: 0;
+    margin-top: 8px;
+  }
+  .remed-items li {
+    font-size: 13px;
+    color: var(--ink-muted);
+    padding: 4px 0;
+    padding-left: 14px;
+    position: relative;
+  }
+  .remed-items li::before {
+    content: '\2192';
+    position: absolute;
+    left: 0;
+    color: var(--ink-light);
+  }
+
+  /* ── Footer ────────────────────────── */
+  .footer {
+    text-align: center;
+    padding: 32px 0;
+    font-size: 12px;
+    color: var(--ink-light);
+    border-top: 1px solid var(--border);
+    margin-top: 48px;
+  }
+
+  /* ── Posture banner ────────────────── */
+  .posture {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    box-shadow: var(--shadow-sm);
+    margin-top: 32px;
+    border-left: 4px solid var(--partial);
+  }
+  .posture p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--ink-muted);
+  }
+  .posture strong { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ HERO ════════════════ -->
+<header class="hero">
+  <div class="hero-label">Showbiz PRD Benchmark</div>
+  <h1>Plan Coverage Report</h1>
+  <p class="hero-sub">107 requirements extracted across 14 functional areas &middot; 20 critical &middot; 68 important &middot; 19 detail</p>
+
+  <div class="gauge-row">
+    <!-- Critical -->
+    <div class="gauge-block secondary">
+      <svg viewBox="0 0 120 120">
+        <circle class="gauge-track" cx="60" cy="60" r="46" />
+        <circle class="gauge-fill" cx="60" cy="60" r="46"
+          stroke="#10b981"
+          stroke-dasharray="289.03"
+          stroke-dashoffset="14.45"
+          transform="rotate(-90 60 60)" />
+        <text x="60" y="58" text-anchor="middle" class="gauge-score-sub">95</text>
+        <text x="60" y="74" text-anchor="middle" fill="#9ba0b8" font-size="10" font-weight="600">%</text>
+      </svg>
+      <div class="gauge-label">Critical</div>
+    </div>
+
+    <!-- Overall -->
+    <div class="gauge-block main">
+      <svg viewBox="0 0 200 200">
+        <circle class="gauge-track" cx="100" cy="100" r="80" />
+        <circle class="gauge-fill" cx="100" cy="100" r="80"
+          stroke="#d97b0e"
+          stroke-dasharray="502.65"
+          stroke-dashoffset="126.67"
+          transform="rotate(-90 100 100)" />
+        <text x="100" y="96" text-anchor="middle" class="gauge-score-main">74.8</text>
+        <text x="100" y="118" text-anchor="middle" fill="#9ba0b8" font-size="13" font-weight="600">% OVERALL</text>
+      </svg>
+      <div class="gauge-label">All Requirements</div>
+    </div>
+
+    <!-- Important -->
+    <div class="gauge-block secondary">
+      <svg viewBox="0 0 120 120">
+        <circle class="gauge-track" cx="60" cy="60" r="46" />
+        <circle class="gauge-fill" cx="60" cy="60" r="46"
+          stroke="#d97b0e"
+          stroke-dasharray="289.03"
+          stroke-dashoffset="68.02"
+          transform="rotate(-90 60 60)" />
+        <text x="60" y="58" text-anchor="middle" class="gauge-score-sub">76</text>
+        <text x="60" y="74" text-anchor="middle" fill="#9ba0b8" font-size="10" font-weight="600">%</text>
+      </svg>
+      <div class="gauge-label">Important</div>
+    </div>
+
+    <!-- Detail (shown smaller, tucked right) -->
+    <div class="gauge-block secondary">
+      <svg viewBox="0 0 120 120">
+        <circle class="gauge-track" cx="60" cy="60" r="46" />
+        <circle class="gauge-fill" cx="60" cy="60" r="46"
+          stroke="#dc3545"
+          stroke-dasharray="289.03"
+          stroke-dashoffset="152.05"
+          transform="rotate(-90 60 60)" />
+        <text x="60" y="58" text-anchor="middle" class="gauge-score-sub">47</text>
+        <text x="60" y="74" text-anchor="middle" fill="#9ba0b8" font-size="10" font-weight="600">%</text>
+      </svg>
+      <div class="gauge-label">Detail</div>
+    </div>
+  </div>
+</header>
+
+<div class="page-wrap">
+
+  <!-- ════════════ EXECUTIVE POSTURE ═══════════ -->
+  <div class="posture">
+    <p>
+      <strong>Bottom line:</strong> The plan covers the core product loop well — collection, discovery, AI, infrastructure — but has real gaps in data integrity rules and settings completeness. It would produce a <strong>functional prototype</strong> that demonstrates primary value, but would ship with silent data corruption risks under catalog refresh and sync scenarios. The 95% critical score is strong. The problem is in the important tier (76%) where six requirements are entirely missing, and the detail tier (47%) where accumulated omissions erode the polish that separates a working skeleton from a faithful rebuild.
+    </p>
+  </div>
+
+  <!-- ════════════ THE ARC ═══════════════════ -->
+  <div class="section">
+    <h2 class="section-title">The Evaluation Arc</h2>
+    <p class="section-desc">From extraction to evaluation — how the coverage picture emerged.</p>
+    <div class="arc">
+      <div class="arc-step">
+        <div class="arc-step-num">1</div>
+        <h3>Requirements Extracted</h3>
+        <p>107 requirements across 14 functional areas pulled from the PRD, infrastructure rider, AI voice, and concept system docs.</p>
+      </div>
+      <div class="arc-arrow">&rarr;</div>
+      <div class="arc-step">
+        <div class="arc-step-num">2</div>
+        <h3>Coverage Evaluated</h3>
+        <p>Each requirement traced against the plan. 66 fully covered, 28 partially covered, 13 entirely missing. Three gap clusters identified.</p>
+      </div>
+      <div class="arc-arrow">&rarr;</div>
+      <div class="arc-step">
+        <div class="arc-step-num">3</div>
+        <h3>Remediation Scoped</h3>
+        <p>Gaps are additive — no architectural rework needed. New plan sections for data integrity, expanded settings specs, and edge-case UX fill the holes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ DISTRIBUTION BAR ══════════ -->
+  <div class="section">
+    <h2 class="section-title">Requirement Distribution</h2>
+    <p class="section-desc">How all 107 requirements break down across coverage levels.</p>
+    <div class="dist-bar-wrap">
+      <div class="dist-bar">
+        <span class="full" style="width:61.7%">66 Full</span>
+        <span class="partial" style="width:26.2%">28 Partial</span>
+        <span class="miss" style="width:12.1%">13</span>
+      </div>
+      <div class="dist-legend">
+        <div class="dist-legend-item"><span class="dist-legend-dot" style="background:var(--full)"></span> Full coverage (66)</div>
+        <div class="dist-legend-item"><span class="dist-legend-dot" style="background:var(--partial)"></span> Partial — addressed but incomplete (28)</div>
+        <div class="dist-legend-item"><span class="dist-legend-dot" style="background:var(--missing)"></span> Missing — not addressed at all (13)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ STRENGTHS & RISKS ═════════ -->
+  <div class="section">
+    <h2 class="section-title">What's Strong vs. What's at Risk</h2>
+    <p class="section-desc">Confidence areas alongside the gaps that need attention before build.</p>
+    <div class="two-col">
+      <div class="card strength-card">
+        <div class="card-header-icon">&#10003;</div>
+        <h3>High Confidence Areas</h3>
+        <ul>
+          <li><strong>Infrastructure & Isolation (100%)</strong> — Namespace partitioning, RLS policies, dev identity, env management, Docker-free build, OAuth migration path all concretely specified with code samples.</li>
+          <li><strong>AI Scoop (100%)</strong> — Full lifecycle covered: generation, caching with 4hr freshness, streaming, collection-gated persistence, personality-driven structure with all five sections.</li>
+          <li><strong>Concept System (92%)</strong> — Generation rules, specificity constraints, ordering by strength, and count constants all present. Only minor gap in diversity axis specification.</li>
+          <li><strong>AI Voice & Personality (90%)</strong> — Shared system prompt, five voice pillars, domain guardrails, and spoiler safety all explicitly defined as a single reusable resource.</li>
+          <li><strong>Show Detail Page (89%)</strong> — 12-section narrative hierarchy, toolbar controls, Scoop toggle states, Explore Similar flow all present with component structures.</li>
+        </ul>
+      </div>
+      <div class="card risk-card">
+        <div class="card-header-icon">&#9888;</div>
+        <h3>Risk Zones</h3>
+        <ul>
+          <li><strong>Data Persistence & Rules (22%)</strong> — 6 of 9 requirements missing. No merge policy, no per-field timestamps, no data versioning, no fallback for unresolvable recs, no AI parse failure recovery.</li>
+          <li><strong>Settings & User Data (29%)</strong> — 3 of 7 requirements entirely missing. No font size, no username, no search-on-launch. API key and model selection only partially addressed.</li>
+          <li><strong>Detail-tier polish (47%)</strong> — 7 of 19 detail requirements missing outright. Starter prompts, re-add behaviour, search-on-launch, concept UX hints, AI failure recovery all absent.</li>
+          <li><strong>Alchemy Discovery (60%)</strong> — Core flow works but chaining, backtracking, catalog input, and state-clearing rules are all only partially specified.</li>
+          <li><strong>Collection UX gaps</strong> — Media-type toggle, 4-group hierarchy, in-collection indicators, and advanced filters (genre, decade, score) are incomplete.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ FUNCTIONAL AREA COVERAGE ══ -->
+  <div class="section">
+    <h2 class="section-title">Coverage by Functional Area</h2>
+    <p class="section-desc">Sorted by coverage score. Green = full, amber = partial, red = missing.</p>
+    <div class="card">
+      <div class="area-grid" id="areaGrid"></div>
+    </div>
+  </div>
+
+  <!-- ════════════ TOP GAPS ══════════════════ -->
+  <div class="section">
+    <h2 class="section-title">Top 5 Gaps — and Why They Matter</h2>
+    <p class="section-desc">These are not minor omissions. Each one has a concrete failure mode if left unaddressed.</p>
+    <div class="gap-list">
+
+      <div class="gap-card gap-critical">
+        <div class="gap-rank">1</div>
+        <div>
+          <div class="gap-id">PRD-073 <span class="gap-sev critical">Critical</span></div>
+          <div class="gap-title">Export My Data: .zip with JSON backup, ISO-8601 dates</div>
+          <p class="gap-body">The plan includes an ExportButton component but specifies nothing about the export format. The PRD requires a <code>.zip</code> containing JSON with ISO-8601 dates. "Your data is yours" is a cross-cutting principle — data portability is a first-class concern. Without the format spec, the export feature is an empty shell: the component exists but the contract is undefined.</p>
+        </div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-rank">2</div>
+        <div>
+          <div class="gap-id">PRD-082 <span class="gap-sev important">Important</span></div>
+          <div class="gap-title">Non-my field merge: selectFirstNonEmpty</div>
+          <p class="gap-body">The storage schema mandates that catalog refreshes never overwrite a non-empty stored value with an empty one. Without this, a metadata API returning partial data silently blanks out posters, overviews, or genre lists. Users see broken tiles with no indication data was lost and no recovery path. This is the most likely silent corruption vector.</p>
+        </div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-rank">3</div>
+        <div>
+          <div class="gap-id">PRD-083 <span class="gap-sev important">Important</span></div>
+          <div class="gap-title">My-field merge by timestamp (newer wins)</div>
+          <p class="gap-body">The PRD requires per-field timestamp conflict resolution. The plan uses a single <code>updated_at</code> on MyData instead of field-specific timestamps. Any sync or concurrent-edit scenario risks overwriting a user's intentional change with a stale value — directly violating the "user's version takes precedence" rule.</p>
+        </div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-rank">4</div>
+        <div>
+          <div class="gap-id">PRD-085 <span class="gap-sev important">Important</span></div>
+          <div class="gap-title">Data continuity: preserve libraries across updates</div>
+          <p class="gap-body">No data model versioning, no AppMetadata entity, no migration strategy. In a benchmark where schemas will iterate, this is a structural omission. Users lose their collection after an app update with no recovery mechanism — exactly the scenario the PRD explicitly prohibits.</p>
+        </div>
+      </div>
+
+      <div class="gap-card">
+        <div class="gap-rank">5</div>
+        <div>
+          <div class="gap-id">PRD-086 <span class="gap-sev important">Important</span></div>
+          <div class="gap-title">Unresolvable recs: graceful degradation</div>
+          <p class="gap-body">AI prompts require real catalog matches, but there is no fallback when resolution fails. The PRD specifies unresolvable titles should appear non-interactive or hand off to Search. Without this, a hallucinated recommendation becomes a dead end or runtime error instead of a graceful degradation.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════ REMEDIATION PATH ══════════ -->
+  <div class="section">
+    <h2 class="section-title">Remediation Path</h2>
+    <p class="section-desc">Three categories of work to close the gaps. All additive — no architectural rework needed.</p>
+    <div class="remed-grid">
+      <div class="remed-card arch" data-type="Architectural">
+        <h4>New Plan Sections</h4>
+        <p>Data integrity gaps need new sections, not just more detail on existing ones.</p>
+        <ul class="remed-items">
+          <li>selectFirstNonEmpty merge policy for catalog data</li>
+          <li>Per-field timestamp schema (replace single updated_at)</li>
+          <li>Re-adding flow preserving existing My Data</li>
+          <li>AppMetadata entity for data model versioning</li>
+          <li>Unresolvable rec fallback pathway</li>
+        </ul>
+      </div>
+      <div class="remed-card scope" data-type="Scope Expansion">
+        <h4>Settings Completeness</h4>
+        <p>Each PRD setting needs a corresponding component and data model entry.</p>
+        <ul class="remed-items">
+          <li>Font size / readability control</li>
+          <li>Username setting with sync support</li>
+          <li>Search on Launch toggle</li>
+          <li>AI model selection (not just persona)</li>
+          <li>Explicit API key management UI</li>
+        </ul>
+      </div>
+      <div class="remed-card spec" data-type="Specification">
+        <h4>Missing Edge-Case Specs</h4>
+        <p>UX details and failure modes that need concrete acceptance criteria.</p>
+        <ul class="remed-items">
+          <li>Ask welcome view with 6 starter prompts</li>
+          <li>Collection 4-group hierarchy with tile sizes</li>
+          <li>Genre, decade, score, "No tags" filters</li>
+          <li>AI parsing failure: retry + fallback</li>
+          <li>Header carousel fallback behaviour</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    Plan Coverage Evaluation &middot; Generated from PLAN_EVAL.md &middot; 107 requirements &middot; 14 functional areas
+  </footer>
+</div>
+
+<script>
+  // Functional area data, sorted by coverage
+  const areas = [
+    { name: 'Infrastructure & Isolation', full: 16, partial: 0, missing: 0, total: 16 },
+    { name: 'AI Scoop', full: 7, partial: 0, missing: 0, total: 7 },
+    { name: 'Concept System', full: 5, partial: 1, missing: 0, total: 6 },
+    { name: 'AI Voice & Personality', full: 4, partial: 1, missing: 0, total: 5 },
+    { name: 'Show Detail Page', full: 7, partial: 2, missing: 0, total: 9 },
+    { name: 'Person Detail', full: 3, partial: 1, missing: 0, total: 4 },
+    { name: 'Navigation & App Structure', full: 2, partial: 2, missing: 0, total: 4 },
+    { name: 'Explore Similar', full: 3, partial: 0, missing: 1, total: 4 },
+    { name: 'Collection Management', full: 9, partial: 7, missing: 1, total: 17 },
+    { name: 'AI Chat (Ask)', full: 5, partial: 3, missing: 1, total: 9 },
+    { name: 'Search & Catalog', full: 3, partial: 1, missing: 1, total: 5 },
+    { name: 'Alchemy Discovery', full: 1, partial: 4, missing: 0, total: 5 },
+    { name: 'Settings & User Data', full: 0, partial: 4, missing: 3, total: 7 },
+    { name: 'Data Persistence & Rules', full: 1, partial: 2, missing: 6, total: 9 },
+  ].map(a => {
+    a.score = Math.round(((a.full + a.partial * 0.5) / a.total) * 100);
+    return a;
+  }).sort((a, b) => b.score - a.score);
+
+  const grid = document.getElementById('areaGrid');
+  areas.forEach(a => {
+    const fullPct = (a.full / a.total * 100).toFixed(1);
+    const partialPct = (a.partial / a.total * 100).toFixed(1);
+    const missingPct = (a.missing / a.total * 100).toFixed(1);
+    const colorClass = a.score >= 80 ? 'pct-high' : a.score >= 50 ? 'pct-mid' : 'pct-low';
+
+    const row = document.createElement('div');
+    row.className = 'area-row';
+    row.innerHTML = `
+      <div class="area-name" title="${a.name}">${a.name}</div>
+      <div class="area-bar-track">
+        <span class="ab-full" style="width:${fullPct}%"></span>
+        <span class="ab-partial" style="width:${partialPct}%"></span>
+        <span class="ab-missing" style="width:${missingPct}%"></span>
+      </div>
+      <div class="area-pct ${colorClass}">${a.score}%</div>
+    `;
+    grid.appendChild(row);
+  });
+</script>
+</body>
+</html>
